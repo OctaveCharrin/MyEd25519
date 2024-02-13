@@ -6,3 +6,4 @@ prefix.sk
 prefix.pk
 MyX25519
 *.py
+.vscode

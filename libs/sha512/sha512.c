@@ -127,7 +127,7 @@ void compress_block(u64* buffer, u64* registers) {
     }
 }
 
-u64* sha512(FILE* stream, u64* registers) {
+u64* _sha512(FILE* stream, u64* registers) {
     u64 buffer[80];
     for (size_t i = 0; i < REGISTER_SIZE; i++) {
         registers[i] = IV[i];
@@ -163,6 +163,40 @@ u64* sha512(FILE* stream, u64* registers) {
         swap_endianness_block(buffer);
         extend_block(buffer);
         compress_block(buffer, registers);
+    }
+
+    return registers;
+}
+
+static inline void UInt64ToLeByte(unsigned long long const n, unsigned char *p){
+    unsigned int mask = 0xff;
+    for (int i=0; i<8; i+=1){
+        p[i] = (unsigned char)(n>>(56 - 8*i) & mask);
+    }
+}
+
+unsigned char* sha512(char const *buffer, int const len, unsigned char* registers){
+
+    FILE *temp_file = tmpfile();
+    if (temp_file == NULL) {
+        perror("Error creating tmpfile\n");
+        return NULL;
+    }
+
+    if (fwrite(buffer, 1, len, temp_file) != (size_t)len) {
+        perror("Error writing to tmpfile\n");
+        fclose(temp_file);
+        return NULL;
+    }
+
+    // Compute H(k);
+    u64 u64_registers[8];
+    rewind(temp_file);
+    _sha512(temp_file, u64_registers);
+    fclose(temp_file);
+
+    for (int i=0; i<=8; i+=1){
+        UInt64ToLeByte(u64_registers[i], registers + (8*i));
     }
 
     return registers;

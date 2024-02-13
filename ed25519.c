@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <gmp.h>
 
 #include "ed25519.h"
@@ -6,6 +7,18 @@
 
 mpz_t p, d; // Prime generator, curve constant
 Point B; // Base point
+
+void PrintPoint(Point P, char *name){
+    gmp_printf("%s : X = %Zd\n", name, P.X);
+    gmp_printf("  : Y = %Zd\n", P.Y);
+    gmp_printf("  : Z = %Zd\n", P.Z);
+    gmp_printf("  : T = %Zd\n", P.T);
+}
+
+void seeCurve(){
+    gmp_printf("p = %Zd, d = %Zd\n", p, d);
+    PrintPoint(B, "B");
+}
 
 void modp_inv(const mpz_t x, mpz_t out) {
     mpz_t exponent;
@@ -15,7 +28,28 @@ void modp_inv(const mpz_t x, mpz_t out) {
     mpz_clear(exponent);
 }
 
-void initCurve(){
+// void setBasePoint(Point *B){
+//     mpz_t x, y, tmp;
+//     mpz_inits(x, y, tmp, NULL);
+//     mpz_set_ui(tmp, 5);
+//     modp_inv(tmp, y);
+//     mpz_mul_ui(y, y, 4);
+//     mpz_mod(y, y, p);
+//     recover_x(y, 0, x);
+//     setPoint(x, y, B);
+//     mpz_clears(x, y, tmp, NULL);
+// }
+
+void setBasePoint(Point *B){
+    mpz_t x, y;
+    mpz_inits(x, y, NULL);
+    mpz_set_str(x, "15112221349535400772501151409588531511454012693041857206046113283949847762202", 10);
+    mpz_set_str(y, "46316835694926478169428394003475163141307993866256225615783033603165251855960", 10);
+    setPoint(x, y, B);
+    mpz_clears(x, y, NULL);
+}
+
+void beginEd25519(){
     // Set p
     mpz_init_set_ui(p, 2);
     mpz_pow_ui(p, p, 255);
@@ -26,55 +60,48 @@ void initCurve(){
     mpz_mul_si(d, d, -121665);
     mpz_mod(d, d, p);
     // Set B
-    initPoint(B);
-    mpz_t x, y, tmp;
-    mpz_inits(x, y, tmp, NULL);
-    mpz_set_ui(tmp, 5);
-    modp_inv(tmp, y);
-    mpz_mul_ui(y, y, 4);
-    mpz_mod(y, y, p);
-    recover_x(y, 0, x);
-    setPoint(x, y, B);
-    mpz_clears(x, y, tmp, NULL);
+    initPoint(&B);
+    setBasePoint(&B);
+    PrintPoint(B, "B");
 }
 
-inline void clearCurve(){
+void endEd25519(){
     mpz_clears(p, d, NULL);
-    clearPoint(B);
+    clearPoint(&B);
 }
 
-inline void initPoint(Point P){
-    mpz_inits(P.X, P.Y, P.Z, P.T, NULL);
+void initPoint(Point *P){
+    mpz_inits(P->X, P->Y, P->Z, P->T, NULL);
 }
 
-void setPoint(mpz_t x, mpz_t y, Point P){
-    mpz_set(P.X, x);
-    mpz_set(P.Y, y);
-    mpz_set_ui(P.Z, 1);
-    mpz_mul(P.T, P.X, P.Y);
-    mpz_mod(P.T, P.T, p);
+void setPoint(mpz_t x, mpz_t y, Point *P){
+    mpz_set(P->X, x);
+    mpz_set(P->Y, y);
+    mpz_set_ui(P->Z, 1);
+    mpz_mul(P->T, P->X, P->Y);
+    mpz_mod(P->T, P->T, p);
 }
 
-void setPointInt(int x, int y, Point P){
-    mpz_set_si(P.X, x);
-    mpz_set_si(P.Y, y);
-    mpz_set_ui(P.Z, 1);
-    mpz_mul(P.T, P.X, P.Y);
-    mpz_mod(P.T, P.T, p);
+void setPointInt(int x, int y, Point *P){
+    mpz_set_si(P->X, x);
+    mpz_set_si(P->Y, y);
+    mpz_set_ui(P->Z, 1);
+    mpz_mul(P->T, P->X, P->Y);
+    mpz_mod(P->T, P->T, p);
 }
 
-void setPointP(Point src, Point dst){
-    mpz_set(dst.X, src.X);
-    mpz_set(dst.Y, src.Y);
-    mpz_set(dst.Z, src.Z);
-    mpz_set(dst.T, src.T);
+void setPointP(Point src, Point *dst){
+    mpz_set(dst->X, src.X);
+    mpz_set(dst->Y, src.Y);
+    mpz_set(dst->Z, src.Z);
+    mpz_set(dst->T, src.T);
 }
 
-inline void clearPoint(Point P){
-    mpz_clears(P.X, P.Y, P.Z, P.T, NULL);
+void clearPoint(Point *P){
+    mpz_clears(P->X, P->Y, P->Z, P->T, NULL);
 }
 
-void point_add(Point P, Point Q, Point out){
+void point_add(Point const P, Point const Q, Point *out){
     mpz_t A, B, C, D, E, F, G, H, t;
     mpz_inits(A, B, C, D, E, F, G, H, t, NULL);
 
@@ -102,33 +129,40 @@ void point_add(Point P, Point Q, Point out){
     mpz_add(G, D, C);
     mpz_add(H, B, A);
 
-    mpz_mul(out.X, E, F);
-    mpz_mul(out.Y, G, H);
-    mpz_mul(out.Z, F, G);
-    mpz_mul(out.T, E, H);
+    mpz_mul(out->X, E, F);
+    mpz_mul(out->Y, G, H);
+    mpz_mul(out->Z, F, G);
+    mpz_mul(out->T, E, H);
 
     mpz_clears(A, B, C, D, E, F, G, H, t, NULL);
 }
 
-void point_mul(mpz_t s, Point P, Point out){
-    Point Q;
-    initPoint(Q);
-    setPointInt(0, 1, Q);
+void point_mul(mpz_t const _s, Point const _P, Point *out){
+    Point Q, P;
+    initPoint(&Q);
+    initPoint(&P);
+    setPointInt(0, 1, &Q);
+    setPointP(_P, &P);
+    mpz_t s;
+    mpz_init(s);
+    mpz_set(s, _s);
 
     while(mpz_cmp_ui(s, 0)>0){
         int bit = mpz_tstbit(s, 0);
         if (bit == 1){
-            point_add(P, Q, Q);
+            point_add(P, Q, &Q);
             mpz_sub_ui(s, s, 1);
         }
-        point_add(P, P, P);
+        point_add(P, P, &P);
         mpz_tdiv_q_ui(s, s, 2);
     }
     setPointP(Q, out);
-    clearPoint(Q);
+    clearPoint(&Q);
+    clearPoint(&P);
+    mpz_clear(s);
 }
 
-int point_equal(Point P, Point Q){
+int point_equal(Point const P, Point const Q){
     mpz_t t1, t2;
     mpz_inits(t1, t2, NULL);
 
@@ -226,13 +260,14 @@ void point_compress(Point P, unsigned char *out){
     int bit = mpz_tstbit(x, 0);
     mpz_ui_pow_ui(x, bit, 255);
     mpz_ior(y, y, x);
-    char string[33];
-    MPZToLeHexString(y, string, 32);
-    HexStringToBytes(string, out);
+    char tmp_string[65];
+    MPZToLeHexString(y, tmp_string, 32);
+    printf("y = %s\n", tmp_string);
+    HexStringToBytes(tmp_string, out);
     mpz_clears(zinv, x, y, NULL);
 }
 
-void point_decompress(unsigned char *s, Point out){
+void point_decompress(unsigned char *s, Point *out){
     mpz_t x, y;
     mpz_inits(x, y, NULL);
     LeByteToMPZ(s, 32, y);

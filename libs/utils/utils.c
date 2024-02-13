@@ -6,9 +6,9 @@
 #include "utils.h"
 
 
-void printBytes(unsigned char const *key, int const n){
+void printBytes(unsigned char const *key, int const n, char const *s){
     for (int i=0; i<n-1; ++i){
-        printf("%02x:", key[i]);
+        printf("%02x%s", key[i], s);
     }
     printf("%02x\n", key[n-1]);
 }
@@ -61,12 +61,15 @@ void UInt64ToLeByte(unsigned long long const n, unsigned char *p){
 }
 
 
-void LeByteToMPZ(unsigned char const *in, int const len, mpz_t out){
-    char reversed[2*len+1];
-    for (int i=0; i<len+1; ++i){
-        snprintf((reversed+2*i), 3, "%02x", in[len-1-i]);
+void LeByteToMPZ(unsigned char const *in, int const n, mpz_t out){
+    char reversed[2*n+1];
+    for (int i=0; i<2*n+1; i+=1){
+        reversed[i]=0;
     }
-    reversed[2*len] = '\0';
+    for (int i=0; i<2*n; i+=2){
+        snprintf((reversed+i), 3, "%02x", in[n-1-i/2]);
+    }
+    reversed[2*n] = '\0';
     if (mpz_set_str(out, reversed, 16) == -1) {
         fprintf(stderr, "Error: Invalid hexadecimal string.\n");
     }

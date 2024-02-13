@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c99
+CFLAGS = -Wall -Wextra -std=c99 -g
 LDFLAGS = -L./libs/utils -L./libs/sha512
 LIBS = -lutils -lsha512 -lgmp
 SRC = keygen.c ed25519.c

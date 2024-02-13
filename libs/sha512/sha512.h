@@ -10,4 +10,5 @@
 typedef unsigned long long u64;
 typedef char u8;
 
-u64* sha512(FILE* stream, u64* registers);
+u64* _sha512(FILE* stream, u64* registers);
+unsigned char* sha512(char const *buffer, int const len, unsigned char* registers);

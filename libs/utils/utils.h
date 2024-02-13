@@ -8,8 +8,9 @@
  * Prints the hexadecimal representation of a buffer bytes per bytes.
  * @param key The buffer to print.
  * @param n The number of bytes to print.
+ * @param s The separator between bytes.
  */
-void printBytes(unsigned char const *buffer, int const n);
+void printBytes(unsigned char const *buffer, int const n, char const *s);
 
 /**
  * Converts a hexadecimal character to its char representation in C.
@@ -50,10 +51,10 @@ void UInt64ToLeByte(unsigned long long const n, unsigned char *p);
 /**
  * Converts a buffer of bytes stored in little endian to mpz_t integer.
  * @param in The input bytes buffer.
- * @param len The input buffer length.
+ * @param n The input buffer length.
  * @param out The output mpz_t integer.
  */
-void LeByteToMPZ(unsigned char const *in, int const len, mpz_t out);
+void LeByteToMPZ(unsigned char const *in, int const n, mpz_t out);
 
 /**
  * Converts an mpz_t integer to it hexadecimal little endian representation.
