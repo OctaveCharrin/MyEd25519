@@ -1,28 +1,22 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99
-LDFLAGS = -L./lib -L./lib/shake256
-LIBS = -lutils -lgmp -lshake128
+LDFLAGS = -L./libs/utils -L./libs/sha512
+LIBS = -lutils -lsha512 -lgmp
 SRC = keygen.c
 OBJ = $(SRC:.c=.o)
 TARGET = keygen
 
-.PHONY: all clean
-
 all: $(TARGET)
 
-$(TARGET): $(OBJ) | lib/libutils.a lib/shake256
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+$(TARGET): $(OBJ) | lib
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-lib/libutils.a:
-	$(MAKE) -C lib
-
-lib/shake256:
-	$(MAKE) -C lib/shake256
+lib:
+	$(MAKE) -C libs
 
 clean:
 	rm -f $(OBJ) $(TARGET)
-	$(MAKE) -C lib clean
-	$(MAKE) -C lib/shake256 clean
+	$(MAKE) -C libs clean

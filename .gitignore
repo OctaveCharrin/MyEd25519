@@ -1,3 +1,7 @@
 *.a
 *.o
 keygen
+main
+prefix.sk
+prefix.pk
+MyX25519

@@ -48,7 +48,7 @@ unsigned int LeByteToUInt32(unsigned char const *p){
 void UInt32ToLeByte(unsigned int const n, unsigned char *p){
     unsigned int mask = 0xff;
     for (int i=0; i<4; i+=1){
-        p[i] = (unsigned char)(n>>(8*i) & mask);
+        p[i] = (unsigned char)(n>>(24 - 8*i) & mask);
     }
 }
 
@@ -56,7 +56,7 @@ void UInt32ToLeByte(unsigned int const n, unsigned char *p){
 void UInt64ToLeByte(unsigned long long const n, unsigned char *p){
     unsigned int mask = 0xff;
     for (int i=0; i<8; i+=1){
-        p[i] = (unsigned char)(n>>(8*i) & mask);
+        p[i] = (unsigned char)(n>>(56 - 8*i) & mask);
     }
 }
 
@@ -71,7 +71,6 @@ void LeByteToMPZ(unsigned char const *in, int const len, mpz_t out){
         fprintf(stderr, "Error: Invalid hexadecimal string.\n");
     }
 }
-
 
 void MPZToLeHexString(mpz_t in, char *out, int const n){
     int len2 = n*2;
