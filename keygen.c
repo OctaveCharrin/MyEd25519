@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <gmp.h>
 
 #include "libs/utils/utils.h"
 #include "libs/sha512/sha512.h"
+
+#include "ed25519.h"
 
 
 
@@ -35,11 +38,11 @@ int main(int argc, char *argv[]){
         fclose(temp_file);
         return 1;
     }
-    rewind(temp_file);
 
+    // Compute H(k);
+    rewind(temp_file);
     u64 hash_register[8];
     sha512(temp_file, hash_register);
-
     fclose(temp_file);
 
     unsigned char key_buffer[64];
@@ -47,16 +50,17 @@ int main(int argc, char *argv[]){
         UInt64ToLeByte(hash_register[i], key_buffer + (8*i));
     }
 
+
+
     printf("key buffer before prune\n");
     printBytes(key_buffer, 64);
 
+
+    // Prune the lower 32 bytes
     key_buffer[31] &= 0x7f;
     key_buffer[31] |= 0x40;
     key_buffer[0]  &= 0xf8;
 
-
-
-    
 
     printf("byte read:\n");
     printBytes((unsigned char *)input_bytes, input_length/2);
@@ -65,6 +69,18 @@ int main(int argc, char *argv[]){
     printf("key buffer after\n");
     printBytes(key_buffer, 64);
 
+    mpz_t s;
+    mpz_init(s);
+    LeByteToMPZ(key_buffer, 32, s);
+    char string[33];
+    unsigned char another[32];
+    MPZToLeHexString(s, string, 32);
+    printf("string = %s\n", string);
+
+    HexStringToBytes(string, another);
+    printBytes(another, 32);
+
+    gmp_printf("s = %Zx\n", s);
 
 
 
@@ -88,7 +104,6 @@ int main(int argc, char *argv[]){
     // fclose(pubfile);
     // fclose(secfile);
 
-
-
+    mpz_clear(s);
     return 0;
 }
