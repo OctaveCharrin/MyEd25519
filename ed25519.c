@@ -29,18 +29,6 @@ void modp_inv(const mpz_t x, mpz_t out) {
     mpz_clear(exponent);
 }
 
-// void asBasePoint(Point *B){
-//     mpz_t x, y, tmp;
-//     mpz_inits(x, y, tmp, NULL);
-//     mpz_set_ui(tmp, 5);
-//     modp_inv(tmp, y);
-//     mpz_mul_ui(y, y, 4);
-//     mpz_mod(y, y, p);
-//     recover_x(y, 0, x);
-//     setPoint(x, y, B);
-//     mpz_clears(x, y, tmp, NULL);
-// }
-
 void asBasePoint(Point *B){
     mpz_t x, y;
     mpz_inits(x, y, NULL);
