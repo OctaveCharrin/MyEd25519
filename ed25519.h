@@ -16,6 +16,7 @@ void initPoint(Point *P);
 void setPoint(mpz_t x, mpz_t y, Point *P);
 void clearPoint(Point *P);
 void asBasePoint(Point *B);
+int isNullPoint(Point const P);
 
 void getp(mpz_t _p);
 void getq(mpz_t _q);

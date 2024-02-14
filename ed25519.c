@@ -88,6 +88,15 @@ void getd(mpz_t _d){
     mpz_set(_d, d);
 }
 
+int isNullPoint(Point const P){
+    int isnull = 0;
+    isnull  = !(mpz_cmp_ui(P.X, 0));
+    isnull &= !(mpz_cmp_ui(P.Y, 0));
+    isnull &= !(mpz_cmp_ui(P.Z, 0));
+    isnull &= !(mpz_cmp_ui(P.T, 0));
+    return isnull;
+}
+
 void initPoint(Point *P){
     mpz_inits(P->X, P->Y, P->Z, P->T, NULL);
 }
@@ -291,7 +300,7 @@ void point_decompress(unsigned char *s, Point *out){
     LeByteToMPZ(s, 32, y);
     int sign = mpz_tstbit(y, 255);
     
-    mpz_ui_pow_ui(x, 1, 255);
+    mpz_ui_pow_ui(x, 2, 255);
     mpz_sub_ui(x, x, 1);
     mpz_and(y, y, x);
 

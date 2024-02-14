@@ -1,6 +1,8 @@
 *.a
 *.o
 keygen
+sign
+verify
 main
 prefix.sk
 prefix.pk
@@ -9,4 +11,4 @@ MyX25519
 .vscode
 write.c
 write
-data.bin
+*.bin
