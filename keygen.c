@@ -59,10 +59,10 @@ int main(int argc, char *argv[]){
     Point G, out;
     initPoint(&out);
     initPoint(&G);
-    setBasePoint(&G);
+    asBasePoint(&G);
     point_mul(a, G, &out);
-    unsigned char public_buffer[32];
-    point_compress(out, public_buffer);
+    unsigned char pub_key[32];
+    point_compress(out, pub_key);
 
     mpz_clear(a);
     clearPoint(&G);
@@ -79,7 +79,7 @@ int main(int argc, char *argv[]){
         perror("Error creating prefix.pk");
         return 1;
     }
-    if (fwrite(public_buffer, 1, 32, pubfile) != 32) {
+    if (fwrite(pub_key, 1, 32, pubfile) != 32) {
         perror("Error writing to tmpfile\n");
         fclose(pubfile);
         return 1;

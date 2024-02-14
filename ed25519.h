@@ -15,7 +15,11 @@ void seeCurve();
 void initPoint(Point *P);
 void setPoint(mpz_t x, mpz_t y, Point *P);
 void clearPoint(Point *P);
-void setBasePoint(Point *B);
+void asBasePoint(Point *B);
+
+void getp(mpz_t _p);
+void getq(mpz_t _q);
+void getd(mpz_t _d);
 
 void beginEd25519();
 void endEd25519();
@@ -26,3 +30,5 @@ int point_equal(Point const P, Point const Q);
 void recover_x(mpz_t y, int sign, mpz_t x);
 void point_compress(Point P, unsigned char *out);
 void point_decompress(unsigned char *s, Point *out);
+
+void sha512_modq(char const *input, int const len, mpz_t output);

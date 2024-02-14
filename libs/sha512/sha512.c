@@ -175,7 +175,7 @@ static inline void UInt64ToLeByte(unsigned long long const n, unsigned char *p){
     }
 }
 
-unsigned char* sha512(char const *buffer, int const len, unsigned char* registers){
+unsigned char* sha512(char const *input, int const len, unsigned char* output){
 
     FILE *temp_file = tmpfile();
     if (temp_file == NULL) {
@@ -183,7 +183,7 @@ unsigned char* sha512(char const *buffer, int const len, unsigned char* register
         return NULL;
     }
 
-    if (fwrite(buffer, 1, len, temp_file) != (size_t)len) {
+    if (fwrite(input, 1, len, temp_file) != (size_t)len) {
         perror("Error writing to tmpfile\n");
         fclose(temp_file);
         return NULL;
@@ -196,8 +196,8 @@ unsigned char* sha512(char const *buffer, int const len, unsigned char* register
     fclose(temp_file);
 
     for (int i=0; i<=8; i+=1){
-        UInt64ToLeByte(u64_registers[i], registers + (8*i));
+        UInt64ToLeByte(u64_registers[i], output + (8*i));
     }
 
-    return registers;
+    return output;
 }

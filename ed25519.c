@@ -4,8 +4,9 @@
 
 #include "ed25519.h"
 #include "libs/utils/utils.h"
+#include "libs/sha512/sha512.h"
 
-mpz_t p, d; // Prime generator, curve constant
+mpz_t p, d, q; // Prime generator, curve constant
 Point B; // Base point
 
 void PrintPoint(Point P, char *name){
@@ -16,7 +17,7 @@ void PrintPoint(Point P, char *name){
 }
 
 void seeCurve(){
-    gmp_printf("p = %Zd, d = %Zd\n", p, d);
+    gmp_printf("p = %Zd\nd = %Zd\nq = %Zd\n", p, d, q);
     PrintPoint(B, "B");
 }
 
@@ -28,7 +29,7 @@ void modp_inv(const mpz_t x, mpz_t out) {
     mpz_clear(exponent);
 }
 
-// void setBasePoint(Point *B){
+// void asBasePoint(Point *B){
 //     mpz_t x, y, tmp;
 //     mpz_inits(x, y, tmp, NULL);
 //     mpz_set_ui(tmp, 5);
@@ -40,7 +41,7 @@ void modp_inv(const mpz_t x, mpz_t out) {
 //     mpz_clears(x, y, tmp, NULL);
 // }
 
-void setBasePoint(Point *B){
+void asBasePoint(Point *B){
     mpz_t x, y;
     mpz_inits(x, y, NULL);
     mpz_set_str(x, "15112221349535400772501151409588531511454012693041857206046113283949847762202", 10);
@@ -55,19 +56,36 @@ void beginEd25519(){
     mpz_pow_ui(p, p, 255);
     mpz_sub_ui(p, p, 19);
     // Set d
-    mpz_set_ui(d, 121666);
+    mpz_init_set_ui(d, 121666);
     modp_inv(d, d);
     mpz_mul_si(d, d, -121665);
     mpz_mod(d, d, p);
+    // Set q
+    mpz_t c;
+    mpz_inits(q, c, NULL);
+    mpz_set_str(c, "27742317777372353535851937790883648493", 10);
+    mpz_ui_pow_ui(q, 2, 252);
+    mpz_add(q, q, c);
+    mpz_clear(c);
     // Set B
     initPoint(&B);
-    setBasePoint(&B);
-    PrintPoint(B, "B");
+    asBasePoint(&B);
 }
 
 void endEd25519(){
     mpz_clears(p, d, NULL);
     clearPoint(&B);
+}
+
+
+void getp(mpz_t _p){
+    mpz_set(_p, p);
+}
+void getq(mpz_t _q){
+    mpz_set(_q, q);
+}
+void getd(mpz_t _d){
+    mpz_set(_d, d);
 }
 
 void initPoint(Point *P){
@@ -258,11 +276,11 @@ void point_compress(Point P, unsigned char *out){
     mpz_mul(y, P.Y, zinv);
     mpz_mod(y, y, p);
     int bit = mpz_tstbit(x, 0);
-    mpz_ui_pow_ui(x, bit, 255);
+    mpz_ui_pow_ui(x, 2, 255);
+    mpz_mul_ui(x, x, bit);
     mpz_ior(y, y, x);
     char tmp_string[65];
     MPZToLeHexString(y, tmp_string, 32);
-    printf("y = %s\n", tmp_string);
     HexStringToBytes(tmp_string, out);
     mpz_clears(zinv, x, y, NULL);
 }
@@ -279,4 +297,11 @@ void point_decompress(unsigned char *s, Point *out){
 
     recover_x(y, sign, x);
     setPoint(x, y, out);
+}
+
+void sha512_modq(char const *input, int const len, mpz_t output){
+    unsigned char tmp[64];
+    sha512(input, len, tmp);
+    LeByteToMPZ(tmp, 64, output);
+    mpz_mod(output, output, q);
 }

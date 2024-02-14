@@ -2,13 +2,19 @@ CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -g
 LDFLAGS = -L./libs/utils -L./libs/sha512
 LIBS = -lutils -lsha512 -lgmp
-SRC = keygen.c ed25519.c
+SRC = keygen.c ed25519.c sign.c verify.c
 OBJ = $(SRC:.c=.o)
-TARGET = keygen
+TARGETS = keygen sign verify
 
-all: $(TARGET)
+all: $(TARGETS)
 
-$(TARGET): $(OBJ) | lib
+keygen: keygen.o ed25519.o | lib
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
+
+sign: sign.o ed25519.o | lib
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
+
+verify: verify.o ed25519.o | lib
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBS)
 
 %.o: %.c
@@ -18,5 +24,5 @@ lib:
 	$(MAKE) -C libs
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) $(TARGETS)
 	$(MAKE) -C libs clean

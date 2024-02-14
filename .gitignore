@@ -7,3 +7,6 @@ prefix.pk
 MyX25519
 *.py
 .vscode
+write.c
+write
+data.bin
