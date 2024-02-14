@@ -7,7 +7,7 @@
 #include "libs/sha512/sha512.h"
 #include "ed25519.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 int main(int argc, char *argv[]){
     

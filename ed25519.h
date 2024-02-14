@@ -25,6 +25,8 @@ void getd(mpz_t _d);
 void beginEd25519();
 void endEd25519();
 
+void negPoint(Point *P);
+
 void point_add(Point const P, Point const Q, Point *out);
 void point_mul(mpz_t const _s, Point const _P, Point *out);
 int point_equal(Point const P, Point const Q);

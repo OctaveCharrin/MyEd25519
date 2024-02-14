@@ -97,6 +97,18 @@ int isNullPoint(Point const P){
     return isnull;
 }
 
+void negPoint(Point *P){
+    mpz_t x, y;
+    mpz_inits(x, y, NULL);
+    mpz_set(x, P->X);
+    mpz_set(y, P->Y);
+    mpz_mul_si(y, y, -1);
+    mpz_mod(y, y, p);
+    setPoint(x, y, P);
+
+    mpz_clears(x, y, NULL);
+}
+
 void initPoint(Point *P){
     mpz_inits(P->X, P->Y, P->Z, P->T, NULL);
 }

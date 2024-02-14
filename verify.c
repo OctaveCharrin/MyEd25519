@@ -5,7 +5,6 @@
 
 #include "libs/utils/utils.h"
 #include "libs/sha512/sha512.h"
-
 #include "ed25519.h"
 
 int main(int argc, char *argv[]){
@@ -34,9 +33,6 @@ int main(int argc, char *argv[]){
     fread(pub_key, 1, pklen, pkfile);
     fclose(pkfile);
 
-    printf("pub = ");
-    printBytes(pub_key, 32, "");
-
     // Read signature
     FILE *sigfile;
     int siglen;
@@ -55,9 +51,6 @@ int main(int argc, char *argv[]){
     rewind(sigfile);
     fread(signature, 1, siglen, sigfile);
     fclose(sigfile);
-
-    printf("sig = ");
-    printBytes(signature, 64, "");
 
     // Read message
     FILE *msgfile;
@@ -93,25 +86,23 @@ int main(int argc, char *argv[]){
 
     point_decompress(pub_key, &A);
     if (isNullPoint(A)){
-        printf("REJECT 1\n");
+        printf("REJECT\n");
         goto clear;
     }
 
     point_decompress(signature, &R);
-    PrintPoint(R, "R sig");
-
     if (isNullPoint(R)){
-        printf("REJECT 2\n");
+        printf("REJECT\n");
         goto clear;
     }
 
     LeByteToMPZ(signature+32, 32, s);
     getq(q);
     if (mpz_cmp(s, q) >= 0){
-        printf("REJECT 3\n");
+        printf("REJECT\n");
         goto clear;
     }
-
+    
     memcpy(buffer, signature, 32);
     memcpy(buffer+32, pub_key, 32);
     memcpy(buffer+64, msg, msglen);
@@ -123,14 +114,10 @@ int main(int argc, char *argv[]){
 
     int valid = point_equal(sB, RhA);
 
-    PrintPoint(R, "R");
-    PrintPoint(sB, "sB");
-    PrintPoint(RhA, "RhA");
-
     if (valid){
-        printf("ACCEPT 4\n");
+        printf("ACCEPT\n");
     } else {
-        printf("REJECT 4\n");
+        printf("REJECT\n");
     }
 
 clear:

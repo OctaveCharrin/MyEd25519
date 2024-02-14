@@ -4,8 +4,8 @@ keygen
 sign
 verify
 main
-prefix.sk
-prefix.pk
+*.sk
+*.pk
 MyX25519
 *.py
 .vscode
