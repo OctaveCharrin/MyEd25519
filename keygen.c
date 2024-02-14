@@ -5,8 +5,9 @@
 
 #include "libs/utils/utils.h"
 #include "libs/sha512/sha512.h"
-
 #include "ed25519.h"
+
+#define DEBUG 1
 
 int main(int argc, char *argv[]){
     
@@ -85,6 +86,13 @@ int main(int argc, char *argv[]){
         return 1;
     }
     fclose(pubfile);
+
+#if DEBUG
+    printf("sec = ");
+    printBytes((unsigned char *)input_bytes, 32, "");
+    printf("pub = ");
+    printBytes(pub_key, 32, "");
+#endif
 
     return 0;
 }

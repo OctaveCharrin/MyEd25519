@@ -7,7 +7,7 @@
 #include "libs/sha512/sha512.h"
 #include "ed25519.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 int main(int argc, char *argv[]){
     
@@ -122,12 +122,7 @@ int main(int argc, char *argv[]){
     mpz_add(s, r, s);
     getq(q);
     mpz_mod(s, s, q);
-    
-    free(msg);
-    free(buffer);
-    clearPoint(&G);
-    clearPoint(&R);
-    mpz_clears(r, h, a, s, q, NULL);
+
     endEd25519();
     //******* END OF COMPUTATION *******
 
@@ -152,6 +147,12 @@ int main(int argc, char *argv[]){
     printf("signature = ");
     printBytes(signature, 64, "");
 #endif
+
+    free(msg);
+    free(buffer);
+    clearPoint(&G);
+    clearPoint(&R);
+    mpz_clears(r, h, a, s, q, NULL);
 
     return 0;
 }

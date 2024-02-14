@@ -56,6 +56,9 @@ int main(int argc, char *argv[]){
     fread(signature, 1, siglen, sigfile);
     fclose(sigfile);
 
+    printf("sig = ");
+    printBytes(signature, 64, "");
+
     // Read message
     FILE *msgfile;
     long msglen;
@@ -94,7 +97,6 @@ int main(int argc, char *argv[]){
         goto clear;
     }
 
-
     point_decompress(signature, &R);
     PrintPoint(R, "R sig");
 
@@ -121,7 +123,7 @@ int main(int argc, char *argv[]){
 
     int valid = point_equal(sB, RhA);
 
-    PrintPoint(R, "R final");
+    PrintPoint(R, "R");
     PrintPoint(sB, "sB");
     PrintPoint(RhA, "RhA");
 
