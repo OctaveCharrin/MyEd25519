@@ -50,8 +50,8 @@ This will print `ACCEPT` if and only if the signature is valid.
 ## Notes
 
 - I was not able to implement the multiexponentiation because of a lack of time and because I was not able to compute the opposite of a point on the curve and thus was not able to compute `[-h]A`.
-
 - You can modify the `DEBUG` macro in both `keygen.c` and `sign.c` to test and debug the code more simply.
+- This code uses the C implementation of `SHA512` that was released under the *MIT License* in the github page of [kevin-zhou-1](https://github.com/kevin-zhou-1/sha512-c). 
 
 ### Author
 Octave Charrin

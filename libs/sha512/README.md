@@ -1,0 +1,1 @@
+This C implementation of `SHA512` was released under the *MIT License* in the github page of [kevin-zhou-1](https://github.com/kevin-zhou-1/sha512-c).
