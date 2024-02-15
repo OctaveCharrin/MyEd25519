@@ -6,21 +6,14 @@
 #include "libs/utils/utils.h"
 #include "libs/sha512/sha512.h"
 
-mpz_t p, d, q; // Prime generator, curve constant
+
+mpz_t p, d, q; // Prime generator, curve constant, group order
 Point B; // Base point
 
-void PrintPoint(Point P, char *name){
-    gmp_printf("%s : X = %Zd\n", name, P.X);
-    gmp_printf("  : Y = %Zd\n", P.Y);
-    gmp_printf("  : Z = %Zd\n", P.Z);
-    gmp_printf("  : T = %Zd\n", P.T);
-}
 
-void seeCurve(){
-    gmp_printf("p = %Zd\nd = %Zd\nq = %Zd\n", p, d, q);
-    PrintPoint(B, "B");
-}
-
+/**
+ * Computes the inverse of x modulo p and store the result in out.
+ */
 void modp_inv(const mpz_t x, mpz_t out) {
     mpz_t exponent;
     mpz_init(exponent);
@@ -29,14 +22,7 @@ void modp_inv(const mpz_t x, mpz_t out) {
     mpz_clear(exponent);
 }
 
-void asBasePoint(Point *B){
-    mpz_t x, y;
-    mpz_inits(x, y, NULL);
-    mpz_set_str(x, "15112221349535400772501151409588531511454012693041857206046113283949847762202", 10);
-    mpz_set_str(y, "46316835694926478169428394003475163141307993866256225615783033603165251855960", 10);
-    setPoint(x, y, B);
-    mpz_clears(x, y, NULL);
-}
+
 
 void beginEd25519(){
     // Set p
@@ -60,21 +46,67 @@ void beginEd25519(){
     asBasePoint(&B);
 }
 
+
 void endEd25519(){
     mpz_clears(p, d, NULL);
     clearPoint(&B);
 }
 
 
-void getp(mpz_t _p){
-    mpz_set(_p, p);
+void PrintPoint(Point const P, char *name){
+    printf("%s\n", name);
+    gmp_printf("  : X = %Zd\n", P.X);
+    gmp_printf("  : Y = %Zd\n", P.Y);
+    gmp_printf("  : Z = %Zd\n", P.Z);
+    gmp_printf("  : T = %Zd\n", P.T);
 }
-void getq(mpz_t _q){
-    mpz_set(_q, q);
+
+
+void initPoint(Point *P){
+    mpz_inits(P->X, P->Y, P->Z, P->T, NULL);
 }
-void getd(mpz_t _d){
-    mpz_set(_d, d);
+
+
+void clearPoint(Point *P){
+    mpz_clears(P->X, P->Y, P->Z, P->T, NULL);
 }
+
+
+void setPoint(mpz_t x, mpz_t y, Point *P){
+    mpz_set(P->X, x);
+    mpz_set(P->Y, y);
+    mpz_set_ui(P->Z, 1);
+    mpz_mul(P->T, P->X, P->Y);
+    mpz_mod(P->T, P->T, p);
+}
+
+
+void setPointP(Point const src, Point *dst){
+    mpz_set(dst->X, src.X);
+    mpz_set(dst->Y, src.Y);
+    mpz_set(dst->Z, src.Z);
+    mpz_set(dst->T, src.T);
+}
+
+
+void setPointInt(int const x, int const y, Point *P){
+    mpz_set_si(P->X, x);
+    mpz_set_si(P->Y, y);
+    mpz_set_ui(P->Z, 1);
+    mpz_mul(P->T, P->X, P->Y);
+    mpz_mod(P->T, P->T, p);
+}
+
+
+void asBasePoint(Point *B){
+    mpz_t x, y;
+    mpz_inits(x, y, NULL);
+    mpz_set_str(x, "15112221349535400772501151409588531511454012693041857206046113283949847762202", 10);
+    mpz_set_str(y, "46316835694926478169428394003475163141307993866256225615783033603165251855960", 10);
+    setPoint(x, y, B);
+    mpz_clears(x, y, NULL);
+}
+
 
 int isNullPoint(Point const P){
     int isnull = 0;
@@ -85,48 +117,50 @@ int isNullPoint(Point const P){
     return isnull;
 }
 
+
+void rescalePoint(Point *P){
+    mpz_t x, y, z, zinv;
+    mpz_inits(x, y, z, zinv, NULL);
+    mpz_set(x, P->X);
+    mpz_set(y, P->Y);
+    mpz_set(z, P->Z);
+    modp_inv(z, zinv);
+    gmp_printf("zinv = %Zd\n", zinv);
+    mpz_mul(x, x, zinv);
+    mpz_mod(x, x, p);
+    mpz_mul(y, y, zinv);
+    mpz_mod(y, y, p);
+    setPoint(x, y, P);
+    mpz_clears(x, y, z, zinv, NULL);
+}
+
+// Does not work ...
 void negPoint(Point *P){
     mpz_t x, y;
     mpz_inits(x, y, NULL);
+    rescalePoint(P);
     mpz_set(x, P->X);
     mpz_set(y, P->Y);
-    mpz_mul_si(y, y, -1);
-    mpz_mod(y, y, p);
+    mpz_sub(y, p, y);
     setPoint(x, y, P);
-
     mpz_clears(x, y, NULL);
 }
 
-void initPoint(Point *P){
-    mpz_inits(P->X, P->Y, P->Z, P->T, NULL);
+
+void getp(mpz_t _p){
+    mpz_set(_p, p);
 }
 
-void setPoint(mpz_t x, mpz_t y, Point *P){
-    mpz_set(P->X, x);
-    mpz_set(P->Y, y);
-    mpz_set_ui(P->Z, 1);
-    mpz_mul(P->T, P->X, P->Y);
-    mpz_mod(P->T, P->T, p);
+
+void getq(mpz_t _q){
+    mpz_set(_q, q);
 }
 
-void setPointInt(int x, int y, Point *P){
-    mpz_set_si(P->X, x);
-    mpz_set_si(P->Y, y);
-    mpz_set_ui(P->Z, 1);
-    mpz_mul(P->T, P->X, P->Y);
-    mpz_mod(P->T, P->T, p);
+
+void getd(mpz_t _d){
+    mpz_set(_d, d);
 }
 
-void setPointP(Point src, Point *dst){
-    mpz_set(dst->X, src.X);
-    mpz_set(dst->Y, src.Y);
-    mpz_set(dst->Z, src.Z);
-    mpz_set(dst->T, src.T);
-}
-
-void clearPoint(Point *P){
-    mpz_clears(P->X, P->Y, P->Z, P->T, NULL);
-}
 
 void point_add(Point const P, Point const Q, Point *out){
     mpz_t A, B, C, D, E, F, G, H, t;
@@ -157,12 +191,17 @@ void point_add(Point const P, Point const Q, Point *out){
     mpz_add(H, B, A);
 
     mpz_mul(out->X, E, F);
+    mpz_mod(out->X, out->X, p);
     mpz_mul(out->Y, G, H);
+    mpz_mod(out->Y, out->Y, p);
     mpz_mul(out->Z, F, G);
+    mpz_mod(out->Z, out->Z, p);
     mpz_mul(out->T, E, H);
+    mpz_mod(out->T, out->T, p);
 
     mpz_clears(A, B, C, D, E, F, G, H, t, NULL);
 }
+
 
 void point_mul(mpz_t const _s, Point const _P, Point *out){
     Point Q, P;
@@ -189,6 +228,7 @@ void point_mul(mpz_t const _s, Point const _P, Point *out){
     mpz_clear(s);
 }
 
+
 int point_equal(Point const P, Point const Q){
     mpz_t t1, t2;
     mpz_inits(t1, t2, NULL);
@@ -213,7 +253,8 @@ int point_equal(Point const P, Point const Q){
     return 1;
 }
 
-void recover_x(mpz_t y, int sign, mpz_t x){
+
+void recover_x(mpz_t y, int const sign, mpz_t x){
     if (mpz_cmp(y, p)>=0){
         fprintf(stderr, "Y too large, cannot recover x\n");
         return;
@@ -276,7 +317,8 @@ void recover_x(mpz_t y, int sign, mpz_t x){
     mpz_clears(x2, tmp, sqrt_m1, NULL);
 }
 
-void point_compress(Point P, unsigned char *out){
+
+void point_compress(Point const P, unsigned char *out){
     mpz_t zinv, x, y;
     mpz_inits(zinv, x, y, NULL);
     modp_inv(P.Z, zinv);
@@ -294,7 +336,8 @@ void point_compress(Point P, unsigned char *out){
     mpz_clears(zinv, x, y, NULL);
 }
 
-void point_decompress(unsigned char *s, Point *out){
+
+void point_decompress(unsigned char const *s, Point *out){
     mpz_t x, y;
     mpz_inits(x, y, NULL);
     LeByteToMPZ(s, 32, y);
@@ -307,6 +350,7 @@ void point_decompress(unsigned char *s, Point *out){
     recover_x(y, sign, x);
     setPoint(x, y, out);
 }
+
 
 void sha512_modq(char const *input, int const len, mpz_t output){
     unsigned char tmp[64];
