@@ -349,6 +349,7 @@ void point_decompress(unsigned char const *s, Point *out){
 
     recover_x(y, sign, x);
     setPoint(x, y, out);
+    mpz_clears(x, y, NULL);
 }
 
 
