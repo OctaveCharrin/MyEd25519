@@ -3,12 +3,12 @@ CFLAGS = -Wall -Wextra -std=c99
 SRC = utils.c
 OBJ = $(SRC:.c=.o)
 LIB = libutils.a
-LDFLAGS = -lgmp
+LDFLAGS = 
 
 all: $(LIB)
 
 $(LIB): $(OBJ)
-	ar rcs $@ $^ $(LDFLAGS)
+	ar rcs $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<

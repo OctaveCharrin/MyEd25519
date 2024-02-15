@@ -8,7 +8,7 @@ OBJ = $(SRC:.c=.o)
 all: $(LIB)
 
 $(LIB): sha512.o
-	ar rcs $@ $^ $(LDFLAGS)
+	ar rcs $@ $^
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
